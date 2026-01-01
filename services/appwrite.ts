@@ -14,9 +14,6 @@ export const updateSearchCount = async (query: string, movie: Movie) => {
     const result = await tables.listRows(DATABASE_ID, TABLE_ID, [
       Query.equal("searchTerm", query),
     ]);
-
-    console.log(result);
-
     if (result.rows.length > 0) {
       const existingMovie = result.rows[0];
       await tables.updateRow(
@@ -28,13 +25,12 @@ export const updateSearchCount = async (query: string, movie: Movie) => {
         }
       );
     } else {
-        console.log(movie)
       await tables.createRow(DATABASE_ID, TABLE_ID, ID.unique(), {
         searchTerm: query,
-        movie_id: movie.id,
+        movie_id: movie.id.toString(),
         title: movie.title,
         count: 1,
-        poster_url: `image.tmdb.org${movie.poster_path}`,
+        poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
       });
     }
   } catch (error) {

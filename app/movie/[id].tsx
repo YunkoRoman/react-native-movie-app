@@ -4,7 +4,7 @@ import React from 'react'
 const MovieScreen = () => {
   return (
     <View>
-      <Text>MovieScreen</Text>
+      
     </View>
   )
 }
