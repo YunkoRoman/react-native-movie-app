@@ -1,7 +1,7 @@
 import { ActivityIndicator, ScrollView, Image, Text, View, TouchableOpacity, Linking } from 'react-native'
 import { SafeAreaView } from "react-native-safe-area-context";
 import React from 'react'
-import { useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import useFetch from '@/services/useFetch';
 import { fetchMovieDetails } from '@/services/api';
 import { icons } from '@/constants/icons';
@@ -87,23 +87,53 @@ const MovieCountries = ({ countries }: { countries?: { name: string }[] | null }
   </View>
 );
 
-const MovieBudget = ({ budget, revenue }: { budget?: number | null, revenue?: number | null }) => (
-  <View className="flex-row items-start gap-10 px-5 mt-6">
-    <View>
-      <Text className="text-light-200 text-sm">Budget</Text>
-      <View className="flex-row items-center gap-2">
-        <Text className="text-light-100 text-lg font-semibold">${budget ? budget / 1_000_000 : 0} million</Text>
+const MovieBudget = ({ budget, revenue }: { budget?: number | null, revenue?: number | null }) => {
+  const formatCurrency = (value?: number | null) => {
+    if (!value) return '$0';
+
+    if (value >= 1_000_000_000) {
+      return `$${(value / 1_000_000_000).toFixed(1)} billion`;
+    } else if (value >= 1_000_000) {
+      return `$${(value / 1_000_000).toFixed(1)} million`;
+    } else {
+      return `$${value.toLocaleString()}`; // Shows full number with commas (e.g., $500,000)
+    }
+  };
+  return (
+    budget ? (
+      <View className="flex-row items-start gap-10 px-5 mt-6">
+        <View>
+          <Text className="text-light-200 text-sm">Budget</Text>
+          <View className="flex-row items-center gap-2">
+            <Text className="text-light-100 text-lg font-semibold">
+              {formatCurrency(budget)}
+            </Text>
+          </View>
+        </View>
+
+        <View>
+          <Text className="text-light-200 text-sm">Revenue</Text>
+          <View className="flex-row items-center gap-2">
+            <Text className="text-light-100 text-lg font-semibold">
+              {formatCurrency(revenue)}
+            </Text>
+          </View>
+        </View>
       </View>
-    </View>
-    <View>
-      <Text className="text-light-200 text-sm">Revenue</Text>
-      <View className="flex-row items-center gap-2">
-        <Text className="text-light-100 text-lg font-semibold">${revenue ? revenue / 1_000_000 : 0} million</Text>
-      </View>
+    ) : null
+  )
+};
+
+const MovieProductionCompany = ({ productionCompanies }: { productionCompanies?: { id: number, name: string }[] | null }) => (
+  <View className="flex-col items-start gap-2 px-5 mt-6">
+    <Text className="text-light-200 text-sm">Production Companies</Text>
+    <View className="flex flex-row flex-wrap items-center gap-2">
+      <Text className="text-light-100 text-lg font-semibold">
+        {productionCompanies?.map((company) => company.name).join("  •  ")}
+      </Text>
     </View>
   </View>
 );
-
 
 const MovieScreen = () => {
   const { id } = useLocalSearchParams();
@@ -122,7 +152,20 @@ const MovieScreen = () => {
         <MovieGenres genres={movie?.genres} />
         <MovieCountries countries={movie?.production_countries} />
         <MovieBudget budget={movie?.budget} revenue={movie?.revenue} />
+        <MovieProductionCompany productionCompanies={movie?.production_companies} />
       </ScrollView>
+
+      <TouchableOpacity
+        className="absolute bottom-5 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
+        onPress={() => router.back()}
+      >
+        <Image
+          source={icons.arrow}
+          className="size-5 mr-1 rotate-180"
+          tintColor="#fff"
+        />
+        <Text className="text-white font-semibold text-base">Go Back</Text>
+      </TouchableOpacity>
     </View>
   )
 }
